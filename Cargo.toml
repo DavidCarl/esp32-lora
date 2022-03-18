@@ -1,0 +1,29 @@
+[package]
+name = "esp-lora"
+version = "0.1.0"
+authors = ["daca <daca@itu.dk>"]
+edition = "2018"
+resolver = "2"
+
+[profile.release]
+opt-level = "s"
+
+[profile.dev]
+debug = true # Symbols are nice and they don't increase the size on Flash
+opt-level = "z"
+
+[features]
+default = ["native"]
+native = ["esp-idf-sys/native"]
+
+[dependencies]
+esp-idf-sys = { version = "0.30.6", features = ["binstart"] }
+sx127x_lora = "0.3.1"
+#esp32-hal = "0.3.0"
+esp-idf-hal = "0.33.1"
+#esp-hal = {url = "https://github.com/esp-rs/esp-hal"}
+embedded-hal = "=1.0.0-alpha.7"
+
+[build-dependencies]
+embuild = "0.28"
+anyhow = "1"
