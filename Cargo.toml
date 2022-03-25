@@ -20,6 +20,7 @@ native = ["esp-idf-sys/native"]
 esp-idf-sys = { version = "0.30.6", features = ["binstart"] }
 sx127x_lora = "0.3.1"
 #esp32-hal = "0.3.0"
+#esp32-hal = "0.3.0"
 esp-idf-hal = "0.33.1"
 #esp-hal = {url = "https://github.com/esp-rs/esp-hal"}
 embedded-hal = "=1.0.0-alpha.7"

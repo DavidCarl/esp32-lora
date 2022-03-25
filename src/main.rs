@@ -1,35 +1,64 @@
-//! SPI loopback test
-//!
-//! Folowing pins are used:
-//! SCLK    GPIO6
-//! MISO    GPIO2
-//! MOSI    GPIO7
-//! CS      GPIO10
-//!
-//! Depending on your target and the board you are using you have to change the pins.
-//!
-//! This example transfers data via SPI.
-//! Connect MISO and MOSI pins to see the outgoing data is read as incoming data.
+extern crate sx127x_lora;
+
+use embedded_hal::digital::blocking::InputPin;
+use embedded_hal::digital::blocking::IoPin;
+use embedded_hal::digital::blocking::OutputPin;
+use esp_idf_sys as _; // If using the `binstart` feature of `esp-idf-sys`, always keep this module imported
 
 use std::thread;
 use std::time::Duration;
 
 use embedded_hal::spi::blocking::Transfer;
 
+//use embedded_hal::digital::v1::OutputPin;
+
 use esp_idf_hal::peripherals::Peripherals;
 use esp_idf_hal::prelude::*;
 use esp_idf_hal::spi;
 
-fn main() -> anyhow::Result<()> {
+const FREQUENCY: i64 = 915;
+fn main() {
+    // Temporary. Will disappear once ESP-IDF 4.4 is released, but for now it is necessary to call this function once,
+    // or else some patches to the runtime implemented by esp-idf-sys might not link properly.
     esp_idf_sys::link_patches();
+
+    println!("Hello, world!");
+
+    setupsx1276();
+}
+
+fn setupsx1276() {
+    #[allow(unused)]
+    //let peripherals = Peripherals::take().unwrap();
+    #[allow(unused)]
+    //let pins = peripherals.pins;
+
+    // SX1276 wiring to ESP32
+    // Not advised to used pins 6 - 11, 16 - 17
+    // DIO0  -> D2
+    // RST   -> D14
+    // NSS   -> D5
+    // SCK   -> D18
+    // MOSI  -> D23
+    // MISO  -> D19
+    
+    //let dio0  = pins.gpio2;
+    //let rst  = pins.gpio14;
+    //let nss   = pins.gpio5;
+    //let sck  = pins.gpio18;
+    //let mosi = pins.gpio23;
+    //let miso = pins.gpio19;
+
+    //let spi = peripherals.spi2;
 
     let peripherals = Peripherals::take().unwrap();
     let spi = peripherals.spi2;
 
     let sclk = peripherals.pins.gpio6;
-    let miso = peripherals.pins.gpio2;
-    let mosi = peripherals.pins.gpio7;
+    let miso = peripherals.pins.gpio19;
+    let mosi = peripherals.pins.gpio23;
     let cs = peripherals.pins.gpio10;
+    let rst  = peripherals.pins.gpio14;
 
     println!("Starting SPI loopback test");
     let config = <spi::config::Config as Default>::default().baudrate(26.MHz().into());
@@ -42,15 +71,12 @@ fn main() -> anyhow::Result<()> {
             cs: Some(cs),
         },
         config,
-    )?;
+    ).unwrap();
+    
+    let mut lora = sx127x_lora::LoRa::new(spi, cs, rst, FREQUENCY, delay);
+    //let mut lora = sx127x_lora::LoRa::new(
+    //    spi, cs, reset,  FREQUENCY, Delay)
+    //    .expect("Failed to communicate with radio module!");
 
-    let mut read = [0u8; 4];
-    let write = [0xde, 0xad, 0xbe, 0xef];
-
-    loop {
-        // we are using thread::sleep here to make sure the watchdog isn't triggered
-        thread::sleep(Duration::from_millis(500));
-        spi.transfer(&mut read, &write)?;
-        println!("Wrote {:x?}, read {:x?}", write, read);
-    }
+    //lora.set_tx_power(17,1); //Using PA_BOOST. See your board for correct pin.
 }
