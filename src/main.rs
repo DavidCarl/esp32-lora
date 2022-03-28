@@ -1,4 +1,5 @@
 extern crate sx127x_lora;
+//extern crate radio_sx127x;
 
 use embedded_hal::digital::blocking::InputPin;
 use embedded_hal::digital::blocking::IoPin;
@@ -9,71 +10,60 @@ use std::thread;
 use std::time::Duration;
 
 use embedded_hal::spi::blocking::Transfer;
-
+use esp_idf_hal::delay::Ets;
 //use embedded_hal::digital::v1::OutputPin;
 
 use esp_idf_hal::peripherals::Peripherals;
 use esp_idf_hal::prelude::*;
 use esp_idf_hal::spi;
+use esp_idf_hal::gpio;
+
 
 const FREQUENCY: i64 = 915;
 fn main() {
-    // Temporary. Will disappear once ESP-IDF 4.4 is released, but for now it is necessary to call this function once,
-    // or else some patches to the runtime implemented by esp-idf-sys might not link properly.
-    esp_idf_sys::link_patches();
-
-    println!("Hello, world!");
 
     setupsx1276();
 }
 
 fn setupsx1276() {
-    #[allow(unused)]
-    //let peripherals = Peripherals::take().unwrap();
-    #[allow(unused)]
-    //let pins = peripherals.pins;
 
-    // SX1276 wiring to ESP32
-    // Not advised to used pins 6 - 11, 16 - 17
-    // DIO0  -> D2
-    // RST   -> D14
-    // NSS   -> D5
-    // SCK   -> D18
-    // MOSI  -> D23
-    // MISO  -> D19
-    
-    //let dio0  = pins.gpio2;
-    //let rst  = pins.gpio14;
-    //let nss   = pins.gpio5;
-    //let sck  = pins.gpio18;
-    //let mosi = pins.gpio23;
-    //let miso = pins.gpio19;
-
-    //let spi = peripherals.spi2;
 
     let peripherals = Peripherals::take().unwrap();
     let spi = peripherals.spi2;
 
-    let sclk = peripherals.pins.gpio6;
+    let sclk = peripherals.pins.gpio5;
     let miso = peripherals.pins.gpio19;
-    let mosi = peripherals.pins.gpio23;
-    let cs = peripherals.pins.gpio10;
+    let mosi = peripherals.pins.gpio27;
+    let cs = peripherals.pins.gpio18;
     let rst  = peripherals.pins.gpio14;
+
+    /*
+    SCLK  5
+    MOSI  27
+    MISO  19
+    NSS   18
+    */
 
     println!("Starting SPI loopback test");
     let config = <spi::config::Config as Default>::default().baudrate(26.MHz().into());
-    let mut spi = spi::Master::<spi::SPI2, _, _, _, _>::new(
+    let spi = spi::Master::<spi::SPI2, _, _, _, _>::new(
         spi,
         spi::Pins {
             sclk,
             sdo: miso,
             sdi: Some(mosi),
-            cs: Some(cs),
+            cs:  Option::<gpio::Gpio18<gpio::Unknown>>::None,
         },
         config,
     ).unwrap();
+    println!("spistuff");    
+    /*let mut lora = sx127x_lora::LoRa::new(spi, cs.into_output().unwrap(), rst.into_input_output().unwrap(), FREQUENCY,Ets);
     
-    let mut lora = sx127x_lora::LoRa::new(spi, cs, rst, FREQUENCY, delay);
+    match lora {
+        Ok(_) => println!("lora succes"),
+        Err(x) => println!("bad shiet {:?}", x),
+    };
+    */
     //let mut lora = sx127x_lora::LoRa::new(
     //    spi, cs, reset,  FREQUENCY, Delay)
     //    .expect("Failed to communicate with radio module!");
