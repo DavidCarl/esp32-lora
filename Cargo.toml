@@ -18,9 +18,10 @@ native = ["esp-idf-sys/native"]
 
 [dependencies]
 esp-idf-sys = { version = "0.30.6", features = ["binstart"] }
-sx127x_lora = "0.3.1"
+sx127x_lora =  {git = "https://github.com/DavidCarl/sx127x_lora"}
 #radio-sx127x = { version ="0.13.0", default-features = false}
-esp-idf-hal = "0.33.1"
+#esp-idf-hal = "0.33.1"
+esp-idf-hal = {git = "https://github.com/DavidCarl/esp-idf-hal"}
 embedded-hal = "=1.0.0-alpha.7"
 
 [build-dependencies]

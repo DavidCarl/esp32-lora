@@ -31,11 +31,12 @@ fn setupsx1276() {
     let peripherals = Peripherals::take().unwrap();
     let spi = peripherals.spi2;
 
-    let sclk = peripherals.pins.gpio5;
-    let miso = peripherals.pins.gpio19;
-    let mosi = peripherals.pins.gpio27;
-    let cs = peripherals.pins.gpio18;
-    let rst  = peripherals.pins.gpio14;
+    let sclk = peripherals.pins.gpio14;
+    let miso = peripherals.pins.gpio12;
+    let mosi = peripherals.pins.gpio13;
+    let cs = peripherals.pins.gpio15;
+    
+    let rst  = peripherals.pins.gpio23;
 
     /*
     SCLK  5
@@ -45,25 +46,26 @@ fn setupsx1276() {
     */
 
     println!("Starting SPI loopback test");
-    let config = <spi::config::Config as Default>::default().baudrate(26.MHz().into());
+    let config = <spi::config::Config as Default>::default().baudrate(8.MHz().into());
     let spi = spi::Master::<spi::SPI2, _, _, _, _>::new(
         spi,
         spi::Pins {
             sclk,
             sdo: miso,
             sdi: Some(mosi),
-            cs:  Option::<gpio::Gpio18<gpio::Unknown>>::None,
+            cs:  Some(cs),//Option::<gpio::Gpio5<gpio::Unknown>>::None,
         },
         config,
     ).unwrap();
     println!("spistuff");    
-    /*let mut lora = sx127x_lora::LoRa::new(spi, cs.into_output().unwrap(), rst.into_input_output().unwrap(), FREQUENCY,Ets);
+    let mut lora = 
+    sx127x_lora::LoRa::new(spi, cs, rst.into_input_output().unwrap(), FREQUENCY,&mut Ets);
     
     match lora {
         Ok(_) => println!("lora succes"),
         Err(x) => println!("bad shiet {:?}", x),
     };
-    */
+    /**/
     //let mut lora = sx127x_lora::LoRa::new(
     //    spi, cs, reset,  FREQUENCY, Delay)
     //    .expect("Failed to communicate with radio module!");
